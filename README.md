@@ -1,2 +1,2 @@
-# Infiltra
-Automated tool for fast vulnerability scanning, OSINT, exploitation and post-exploitation tasks.
+# NullProbe
+Open source automated CLI tool for fast vulnerability scanning, OSINT, exploitation and post-exploitation tasks.
