@@ -9,9 +9,13 @@ class BettercapRepo(GitHubRepo):
         super().__init__(
             path="bettercap/bettercap",
             install={
-                "linux": "sudo apt install golang git build-essential libpcap-dev libusb-1.0-0-dev libnetfilter-queue-dev; go get -u github.com/bettercap/bettercap",
-                "arch": "sudo pacman -Sy bettercap",
-                "brew": "install bettercap",
+                "pacman": "bettercap",  # Available in Arch repos
+                "brew": "bettercap",
+                "apt-get": "sudo apt install -y golang git build-essential libpcap-dev libusb-1.0-0-dev libnetfilter-queue-dev && go install github.com/bettercap/bettercap@latest",
+                "yum": "sudo yum install -y golang git gcc libpcap-devel libusb-devel && go install github.com/bettercap/bettercap@latest",
+                "dnf": "sudo dnf install -y golang git gcc libpcap-devel libusb-devel && go install github.com/bettercap/bettercap@latest",
+                "linux": "sudo apt install -y golang git build-essential libpcap-dev libusb-1.0-0-dev libnetfilter-queue-dev && go install github.com/bettercap/bettercap@latest",
+                "arch": "sudo pacman -S --noconfirm bettercap",
             },
             description="Swiss army knife for network attacks and monitoring",
         )

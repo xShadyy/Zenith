@@ -9,7 +9,15 @@ class S3scannerRepo(GitHubRepo):
     def __init__(self):
         super().__init__(
             path="sa7mon/S3Scanner",
-            install={"pip": "requirements.txt"},
+            install={
+                "pip": "requirements.txt",
+                # Optional system dependencies
+                "apt-get": "python3-dev",
+                "yum": "python3-devel",
+                "dnf": "python3-devel",
+                "pacman": "python python-pip",
+                "brew": "python3",
+            },
             description="A tool to find open S3 buckets and dump their contents",
         )
 

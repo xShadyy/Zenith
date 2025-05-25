@@ -10,6 +10,12 @@ from rich.table import Table
 from zenith.console import console
 from zenith.core.config import INSTALL_DIR, get_config
 from zenith.core.menu import confirm
+from zenith.core.package_manager import (
+    detect_os,
+    detect_package_manager,
+    get_install_command,
+    install_package,
+)
 
 config = get_config()
 
@@ -136,7 +142,8 @@ class GitHubRepo(metaclass=ABCMeta):
             else:
                 os.chdir(INSTALL_DIR)
             install = self.install_options
-            target_os = config.get("zenith", "os")
+            current_os = detect_os()
+            package_manager = detect_package_manager()
 
             if isinstance(install, dict):
                 if "pip" in install:
@@ -172,15 +179,72 @@ class GitHubRepo(metaclass=ABCMeta):
                     else:
                         raise InstallError("Supported download tools missing")
                     command = f"mkdir {self.full_path} && {command} && chmod +x {self.full_path}/{self.name}"
-                elif "brew" in install and which("brew"):
-                    brew_opts = install.get("brew")
-                    command = f"brew {brew_opts}"
-                elif target_os in install and target_os in self.scriptable_os:
-                    command = str(install[target_os])
+
+                # Enhanced package manager support with auto-detection
+                elif package_manager and package_manager in install:
+                    # Use detected package manager
+                    package_name = install.get(package_manager)
+                    if isinstance(package_name, str):
+                        command = get_install_command(package_name, package_manager)
+                    else:
+                        command = str(package_name)
+
+                elif "brew" in install and (which("brew") or package_manager == "brew"):
+                    package_name = install.get("brew")
+                    if package_name.startswith("install "):
+                        command = f"brew {package_name}"
+                    else:
+                        command = f"brew install {package_name}"
+
+                # Legacy OS-specific commands with auto-detection fallback
+                elif current_os == "linux" and package_manager:
+                    # Try to map common Linux package names
+                    linux_mappings = {
+                        "apt-get": install.get("linux")
+                        or install.get("debian")
+                        or install.get("ubuntu"),
+                        "yum": install.get("linux")
+                        or install.get("rhel")
+                        or install.get("centos"),
+                        "pacman": install.get("linux") or install.get("arch"),
+                        "dnf": install.get("linux") or install.get("fedora"),
+                    }
+
+                    if (
+                        package_manager in linux_mappings
+                        and linux_mappings[package_manager]
+                    ):
+                        command = str(linux_mappings[package_manager])
+                    elif "linux" in install:
+                        command = str(install["linux"])
+
+                elif current_os == "macos" and "macos" in install:
+                    command = str(install["macos"])
+
+                elif current_os == "windows" and "windows" in install:
+                    command = str(install["windows"])
+
+                # Fallback to existing logic
+                elif current_os in install and current_os in self.scriptable_os:
+                    command = str(install[current_os])
                 else:
-                    raise InstallError(
-                        f"Platform not supported, missing {', '.join(install.keys())}"
-                    )
+                    # Auto-installation attempt for common tools
+                    if package_manager and self._try_auto_install():
+                        console.print(
+                            f"Successfully auto-installed dependencies using {package_manager}",
+                            style="bold green",
+                        )
+                        return
+                    else:
+                        available_options = (
+                            list(install.keys())
+                            if isinstance(install, dict)
+                            else ["manual command"]
+                        )
+                        raise InstallError(
+                            f"Platform not supported. Available options: {', '.join(available_options)}. "
+                            f"Detected OS: {current_os}, Package manager: {package_manager or 'none'}"
+                        )
             else:
                 command = install
 
@@ -193,6 +257,36 @@ class GitHubRepo(metaclass=ABCMeta):
                     )
             else:
                 raise InstallError("No valid installation command determined")
+
+    def _try_auto_install(self) -> bool:
+        """
+        Attempt to automatically install common dependencies based on tool name.
+        Returns True if successful, False otherwise.
+        """
+        package_manager = detect_package_manager()
+        if not package_manager:
+            return False
+
+        # Common tool to package name mappings
+        tool_packages = {
+            "nmap": "nmap",
+            "bettercap": "bettercap" if package_manager == "pacman" else None,
+            "sqlmap": None,  # Usually installed via git clone
+            "sublist3r": None,  # Python tool, no system package
+            "sherlock": None,  # Python tool, no system package
+            "photon": None,  # Python tool, no system package
+            "xsstrike": None,  # Python tool, no system package
+        }
+
+        tool_name = self.name.lower()
+        package_name = tool_packages.get(tool_name)
+
+        if package_name and confirm(
+            f"Auto-install {package_name} using {package_manager}?"
+        ):
+            return install_package(package_name, package_manager)
+
+        return False
 
     def installed(self) -> bool:
         return os.path.exists(self.full_path)

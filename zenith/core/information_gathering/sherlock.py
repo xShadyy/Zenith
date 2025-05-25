@@ -9,7 +9,15 @@ class SherlockRepo(GitHubRepo):
     def __init__(self):
         super().__init__(
             path="sherlock-project/sherlock",
-            install={"pip": "requirements.txt"},
+            install={
+                "pip": "requirements.txt",
+                # Optional system dependencies for better performance
+                "apt-get": "python3-dev libssl-dev libffi-dev",
+                "yum": "python3-devel openssl-devel libffi-devel",
+                "dnf": "python3-devel openssl-devel libffi-devel",
+                "pacman": "python python-pip",
+                "brew": "python3",
+            },
             description="Hunt down social media accounts by username across social networks",
         )
 

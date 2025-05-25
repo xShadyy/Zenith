@@ -32,9 +32,16 @@ class NmapRepo(GitHubRepo):
         super().__init__(
             path="nmap/nmap",
             install={
-                "arch": "sudo pacman -Sy nmap",
-                "brew": "install nmap",
-                "linux": "sudo apt-get install nmap",
+                "nmap": "nmap",  # Auto-detected package manager
+                "apt-get": "nmap",
+                "yum": "nmap",
+                "dnf": "nmap",
+                "pacman": "nmap",
+                "zypper": "nmap",
+                "brew": "nmap",
+                "linux": "sudo apt-get install -y nmap",  # Fallback
+                "arch": "sudo pacman -S --noconfirm nmap",
+                "macos": "brew install nmap",
             },
             description="the Network Mapper",
         )
