@@ -1,10 +1,8 @@
-from zenith.core.menu import tools_cli
+from zenith.console import console
 
-from .bettercap import bettercap
-from .nmap import nmap
-
-__tools__ = [nmap, bettercap]
+__tools__ = []
 
 
 def cli():
-    tools_cli(__name__, __tools__)
+    console.print("Network tools have been removed from this framework.", style="info")
+    console.print("This category is available for future tool additions.", style="info")

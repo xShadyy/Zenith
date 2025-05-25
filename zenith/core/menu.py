@@ -70,7 +70,9 @@ def module_name(module):
 
 def prompt(path="", base_path="~"):
     encoded_path = os.path.join(base_path, path, "")
-    return f"\nzenith {encoded_path}# "
+    GRAY = "\033[90m"
+    RESET = "\033[0m"
+    return f"\n{GRAY}Zenith{RESET} {encoded_path}# >>> "
 
 
 def input_wait():
