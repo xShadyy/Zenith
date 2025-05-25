@@ -28,9 +28,38 @@ from zenith.core.menu import (
 config = get_config()
 
 SKULL_ART = r"""
+          .                                                      .
+        .n                   .                 .                  n.
+  .   .dP                  dP                   9b                 9b.    .
+ 4    qXb         .       dX                     Xb       .        dXp     t
+dX.    9Xb      .dXb    __                         __    dXb.     dXP     .Xb
+9XXb._       _.dXXXXb dXXXXbo.                 .odXXXXb dXXXXb._       _.dXXP
+ 9XXXXXXXXXXXXXXXXXXXVXXXXXXXXOo.           .oOXXXXXXXXVXXXXXXXXXXXXXXXXXXXP
+  9XXXXXXXXXXXXXXXXXXXXX'~   ~OOO8b   d8OOO'~   ~XXXXXXXXXXXXXXXXXXXXXP'
+    9XXXXXXXXXXXP' 9XX'   PROJECT   98v8P'  ZENITH   XXP' 9XXXXXXXXXXXP'
+        ~~~~~~~       9X.          .db|db.          .XP       ~~~~~~~
+                        )b.  .dbo.dP'v'9b.odb.  .dX(
+                      ,dXXXXXXXXXXXb     dXXXXXXXXXXXb.
+                     dXXXXXXXXXXXP'   .   9XXXXXXXXXXXb
+                    dXXXXXXXXXXXXb   d|b   dXXXXXXXXXXXXb
+                    9XXb'   XXXXXb.dX|Xb.dXXXXX'   dXXP
+                     '      9XXXXXX(   )XXXXXXP      '
+                              XXXX X.v'.X XXXX
+                              XP^X'b   d'X^XX
+                              X. 9     '  P )X
+                              b         '  d'
+                                            '
 """
 
 TERMS = """
+I shall not use fsociety to:
+(i) upload or otherwise transmit, display or distribute any
+content that infringes any trademark, trade secret, copyright
+or other proprietary or intellectual property rights of any
+person; (ii) upload or otherwise transmit any material that contains
+software viruses or any other computer code, files or programs
+designed to interrupt, destroy or limit the functionality of any
+computer software or hardware or telecommunications equipment;
 """
 
 MENU_ITEMS = [
