@@ -10,7 +10,7 @@ from zenith.console import console
 
 from .config import GITHUB_PATH, INSTALL_DIR
 from .hosts import add_host, get_hosts
-from .menu import set_readline, tools_cli
+from .menu import set_readline, tools_cli, confirm
 
 
 class Utility(metaclass=ABCMeta):
@@ -67,7 +67,33 @@ class print_contributors(Utility):
             console.print(f" {username} ".center(30, "-"))
 
 
-__tools__ = [tool() for tool in [host2ip, base64_decode, print_contributors]]
+class reset_tool_dependencies(Utility):
+    def __init__(self):
+        super().__init__(description="Reset tool dependency markers")
+
+    def run(self):
+        import glob
+        deps_files = glob.glob(os.path.join(INSTALL_DIR, "*", ".zenith_deps_installed"))
+        if not deps_files:
+            console.print("No dependency markers found", style="info")
+            return
+        
+        console.print(f"Found {len(deps_files)} dependency markers:", style="info")
+        for deps_file in deps_files:
+            tool_name = os.path.basename(os.path.dirname(deps_file))
+            console.print(f"  {tool_name}", style="tool_description")
+        
+        if confirm("Do you want to reset all dependency markers?"):
+            for deps_file in deps_files:
+                try:
+                    os.remove(deps_file)
+                    tool_name = os.path.basename(os.path.dirname(deps_file))
+                    console.print(f"Reset dependencies for {tool_name}", style="success")
+                except OSError as e:
+                    console.print(f"Failed to remove {deps_file}: {e}", style="error")
+
+
+__tools__ = [tool() for tool in [host2ip, base64_decode, print_contributors, reset_tool_dependencies]]
 
 
 def cli():

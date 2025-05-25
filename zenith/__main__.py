@@ -7,12 +7,12 @@ from socket import gethostbyname
 import pyfiglet
 from rich.align import Align
 
-import zenith.core.enumeration
-import zenith.core.network
-import zenith.core.obfuscation
-import zenith.core.passwords
+import zenith.enumeration
+import zenith.network
+import zenith.obfuscation
+import zenith.passwords
 import zenith.core.utilities
-import zenith.core.web_apps
+import zenith.web_apps
 from zenith.console import console
 from zenith.core.config import CONFIG_FILE, get_config, write_config
 from zenith.core.menu import (
@@ -83,11 +83,11 @@ Author is not responsible for any misuse of this tool.
 """
 
 MENU_ITEMS = [
-    zenith.core.enumeration,
-    zenith.core.network,
-    zenith.core.web_apps,
-    zenith.core.passwords,
-    zenith.core.obfuscation,
+    zenith.enumeration,
+    zenith.network,
+    zenith.web_apps,
+    zenith.passwords,
+    zenith.obfuscation,
     zenith.core.utilities,
 ]
 BUILTIN_FUNCTIONS = {
@@ -98,20 +98,22 @@ commands = list(items.keys()) + list(BUILTIN_FUNCTIONS.keys())
 
 
 def print_menu_items():
-    console.print("Available Categories:", style="menu_category")
-    console.print()
-    
-    # Create columns for categories
     from rich.columns import Columns
     from rich.text import Text
+    from zenith.core.menu import format_tools
     
-    category_texts = []
+    cols = []
     for value in MENU_ITEMS:
         name = module_name(value)
-        text = Text(name.upper(), style="command")
-        category_texts.append(text)
-    
-    console.print(Columns(category_texts, equal=True, expand=True))
+        tools = getattr(value, '__tools__', [])
+        tools_formatted = format_tools(tools)
+        
+        tools_str = Text()
+        tools_str.append(name.upper(), style="command")
+        tools_str.append(tools_formatted, style="tool_description")
+        cols.append(tools_str)
+
+    console.print(Columns(cols, equal=True, expand=True))
     console.print()
     
     console.print("System Commands:", style="menu_category")
