@@ -1,13 +1,8 @@
-from zenith.core.menu import tools_cli
+from zenith.console import console
 
-from .changeme import changeme
-from .cr3dov3r import cr3dov3r
-from .cupp import cupp
-from .hash_buster import hash_buster
-from .traitor import traitor
-
-__tools__ = [cupp, cr3dov3r, hash_buster, changeme, traitor]
+__tools__ = []
 
 
 def cli():
-    tools_cli(__name__, __tools__)
+    console.print("Password tools have been removed from this framework.", style="info")
+    console.print("This category is available for future tool additions.", style="info")

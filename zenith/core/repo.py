@@ -154,14 +154,32 @@ class GitHubRepo(metaclass=ABCMeta):
                         packages_str = " ".join(packages)
                         command = f"pip install {packages_str}"
                     elif isinstance(packages, str):
-                        requirements_txt = os.path.join(
-                            self.full_path, "requirements.txt"
-                        )
-                        message = f"Do you want to install these packages from {requirements_txt}?"
-                        command = f"pip install -r {requirements_txt}"
+                        if packages.startswith("pip install"):
+                            # Direct pip command
+                            command = packages
+                            message = f"Do you want to run: {command}?"
+                        else:
+                            # Assume it's a requirements file
+                            requirements_file = os.path.join(self.full_path, packages)
+                            if not os.path.exists(requirements_file):
+                                # Fallback: try installing current directory if requirements.txt doesn't exist
+                                # but pyproject.toml exists (for Poetry/modern Python projects)
+                                pyproject_file = os.path.join(self.full_path, "pyproject.toml")
+                                if os.path.exists(pyproject_file):
+                                    command = "pip install ."
+                                    message = f"requirements.txt not found, but pyproject.toml exists. Install current directory?"
+                                else:
+                                    raise InstallError(f"Requirements file not found: {requirements_file}")
+                            else:
+                                command = f"pip install -r {requirements_file}"
+                                message = f"Do you want to install these packages from {requirements_file}?"
 
-                    if packages:
-                        print_pip_deps(packages)
+                    if packages and not packages.startswith("pip install"):
+                        try:
+                            print_pip_deps(packages)
+                        except (ValueError, FileNotFoundError):
+                            # If we can't read the deps (e.g., for pyproject.toml), just continue
+                            pass
                     if not confirm(message):
                         raise InstallError("User cancelled pip installation")
 
@@ -252,7 +270,6 @@ class GitHubRepo(metaclass=ABCMeta):
                 raise InstallError("No valid installation command determined")
 
     def _try_auto_install(self) -> bool:
-        """ """
         package_manager = detect_package_manager()
         if not package_manager:
             return False

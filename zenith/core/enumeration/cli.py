@@ -1,15 +1,8 @@
-from zenith.core.menu import tools_cli
+from zenith.console import console
 
-from .gitgraber import gitgraber
-from .hydrarecon import hydrarecon
-from .s3scanner import s3scanner
-from .sherlock import sherlock
-from .sqlmap import sqlmap
-from .striker import striker
-from .sublist3r import sublist3r
-
-__tools__ = [sqlmap, striker, sublist3r, sherlock, s3scanner, gitgraber, hydrarecon]
+__tools__ = []
 
 
 def cli():
-    tools_cli(__name__, __tools__)
+    console.print("Enumeration tools have been removed from this framework.", style="info")
+    console.print("This category is available for future tool additions.", style="info")

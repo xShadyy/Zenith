@@ -1,9 +1,8 @@
-from zenith.core.menu import tools_cli
+from zenith.console import console
 
-from .cuteit import cuteit
-
-__tools__ = [cuteit]
+__tools__ = []
 
 
 def cli():
-    tools_cli(__name__, __tools__)
+    console.print("Obfuscation tools have been removed from this framework.", style="info")
+    console.print("This category is available for future tool additions.", style="info")

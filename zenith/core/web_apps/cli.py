@@ -1,10 +1,8 @@
-from zenith.core.menu import tools_cli
+from zenith.console import console
 
-from .photon import photon
-from .xsstrike import xsstrike
-
-__tools__ = [xsstrike, photon]
+__tools__ = []
 
 
 def cli():
-    tools_cli(__name__, __tools__)
+    console.print("Web application tools have been removed from this framework.", style="info")
+    console.print("This category is available for future tool additions.", style="info")

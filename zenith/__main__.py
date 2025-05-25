@@ -6,8 +6,6 @@ from socket import gethostbyname
 
 import pyfiglet
 from rich.align import Align
-from rich.columns import Columns
-from rich.text import Text
 
 import zenith.core.enumeration
 import zenith.core.network
@@ -19,7 +17,6 @@ from zenith.console import console
 from zenith.core.config import CONFIG_FILE, get_config, write_config
 from zenith.core.menu import (
     clear_screen,
-    format_tools,
     module_name,
     prompt,
     set_readline,
@@ -27,39 +24,62 @@ from zenith.core.menu import (
 
 config = get_config()
 
-SKULL_ART = r"""
-          .                                                      .
-        .n                   .                 .                  n.
-  .   .dP                  dP                   9b                 9b.    .
- 4    qXb         .       dX                     Xb       .        dXp     t
-dX.    9Xb      .dXb    __                         __    dXb.     dXP     .Xb
-9XXb._       _.dXXXXb dXXXXbo.                 .odXXXXb dXXXXb._       _.dXXP
- 9XXXXXXXXXXXXXXXXXXXVXXXXXXXXOo.           .oOXXXXXXXXVXXXXXXXXXXXXXXXXXXXP
-  9XXXXXXXXXXXXXXXXXXXXX'~   ~OOO8b   d8OOO'~   ~XXXXXXXXXXXXXXXXXXXXXP'
-    9XXXXXXXXXXXP' 9XX'   PROJECT   98v8P'  ZENITH   XXP' 9XXXXXXXXXXXP'
-        ~~~~~~~       9X.          .db|db.          .XP       ~~~~~~~
-                        )b.  .dbo.dP'v'9b.odb.  .dX(
-                      ,dXXXXXXXXXXXb     dXXXXXXXXXXXb.
-                     dXXXXXXXXXXXP'   .   9XXXXXXXXXXXb
-                    dXXXXXXXXXXXXb   d|b   dXXXXXXXXXXXXb
-                    9XXb'   XXXXXb.dX|Xb.dXXXXX'   dXXP
-                     '      9XXXXXX(   )XXXXXXP      '
-                              XXXX X.v'.X XXXX
-                              XP^X'b   d'X^XX
-                              X. 9     '  P )X
-                              b         '  d'
-                                            '
-"""
+def create_skull_art():
+    from rich.text import Text
+    
+    skull_lines = [
+        "          .                                                      .",
+        "        .n                   .                 .                  n.",
+        "  .   .dP                  dP                   9b                 9b.    .",
+        " 4    qXb         .       dX                     Xb       .        dXp     t",
+        "dX.    9Xb      .dXb    __                         __    dXb.     dXP     .Xb",
+        "9XXb._       _.dXXXXb dXXXXbo.                 .odXXXXb dXXXXb._       _.dXXP",
+        " 9XXXXXXXXXXXXXXXXXXXVXXXXXXXXOo.           .oOXXXXXXXXVXXXXXXXXXXXXXXXXXXXP",
+        "  9XXXXXXXXXXXXXXXXXXXXX'~   ~OOO8b   d8OOO'~   ~XXXXXXXXXXXXXXXXXXXXXP'",
+        "    9XXXXXXXXXXXP' 9XX'   PROJECT   98v8P'  ZENITH   XXP' 9XXXXXXXXXXXP'",
+        "        ~~~~~~~       9X.          .db|db.          .XP       ~~~~~~~",
+        "                        )b.  .dbo.dP'v'9b.odb.  .dX(",
+        "                      ,dXXXXXXXXXXXb     dXXXXXXXXXXXb.",
+        "                     dXXXXXXXXXXXP'   .   9XXXXXXXXXXXb",
+        "                    dXXXXXXXXXXXXb   d|b   dXXXXXXXXXXXXb",
+        "                    9XXb'   XXXXXb.dX|Xb.dXXXXX'   dXXP",
+        "                     '      9XXXXXX(   )XXXXXXP      '",
+        "                              XXXX X.v'.X XXXX",
+        "                              XP^X'b   d'X^XX",
+        "                              X. 9     '  P )X",
+        "                              b         '  d'",
+        "                                            '"
+    ]
+    
+    text = Text()
+    for line in skull_lines:
+        if "PROJECT" in line and "ZENITH" in line:
+            parts = line.split("PROJECT")
+            text.append(parts[0])
+            text.append("PROJECT", style="red")
+            
+            remaining = parts[1].split("ZENITH")
+            text.append(remaining[0])
+            text.append("ZENITH", style="red")
+            text.append(remaining[1])
+        else:
+            text.append(line)
+        text.append("\n")
+    
+    return text
+
+SKULL_ART = create_skull_art()
 
 TERMS = """
-I shall not use fsociety to:
-(i) upload or otherwise transmit, display or distribute any
-content that infringes any trademark, trade secret, copyright
-or other proprietary or intellectual property rights of any
-person; (ii) upload or otherwise transmit any material that contains
-software viruses or any other computer code, files or programs
-designed to interrupt, destroy or limit the functionality of any
-computer software or hardware or telecommunications equipment;
+I shall not use Zenith to engage in any activity that infringes 
+intellectual property rights, violates privacy or 
+security, distributes malicious code,
+or otherwise harms individuals, systems, or networks.
+I shall not use Zenith to manipulate or reverse engineer the platform,
+exploit it for unauthorized access,
+facilitate fraudulent, deceptive, or abusive behavior,
+or use it in any other unlawful or unethical manner.
+Author is not responsible for any misuse of this tool.
 """
 
 MENU_ITEMS = [
@@ -80,16 +100,20 @@ commands = list(items.keys()) + list(BUILTIN_FUNCTIONS.keys())
 def print_menu_items():
     console.print("Available Categories:", style="menu_category")
     console.print()
-    cols = []
+    
+    # Create columns for categories
+    from rich.columns import Columns
+    from rich.text import Text
+    
+    category_texts = []
     for value in MENU_ITEMS:
         name = module_name(value)
-        tools = format_tools(value.__tools__)
-        tools_str = Text()
-        tools_str.append(name.upper(), style="command")
-        tools_str.append(tools, style="tool_description")
-        cols.append(tools_str)
-    console.print(Columns(cols, equal=True, expand=True))
+        text = Text(name.upper(), style="command")
+        category_texts.append(text)
+    
+    console.print(Columns(category_texts, equal=True, expand=True))
     console.print()
+    
     console.print("System Commands:", style="menu_category")
     for key in BUILTIN_FUNCTIONS:
         console.print(f"  {key}", style="command")
@@ -111,13 +135,9 @@ def agreement():
 def mainloop():
     agreement()
     clear_screen()
-    console.print(Align.center(SKULL_ART), style="bold white on black")
-    console.print()
-    console.print()
-    console.print("Penetration Testing Framework", style="info", justify="center")
-    console.print("Developed by: xShadyy", style="info", justify="center")
+    console.print(Align.center(SKULL_ART), style="skull_art")
+    console.print("Developed by: xShadyy", style="subtitle", justify="center")
     console.print("─" * 60, style="table_border", justify="center")
-    console.print()
     print_menu_items()
     selected = input(prompt()).strip()
     if not selected or selected not in commands:

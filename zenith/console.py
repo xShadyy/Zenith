@@ -7,6 +7,7 @@ install()
 zenith_theme = Theme(
     {
         "command": "black on white",
+        "subtitle": "bold black",
         "warning": "bold yellow",
         "error": "bold red",
         "success": "bold green",
@@ -15,7 +16,7 @@ zenith_theme = Theme(
         "prompt": "bright_blue",
         "table_border": "white",
         "link": "blue underline",
-        "banner": "bright_magenta",
+        "skull_art": "bold white",
         "menu_category": "bright_yellow",
         "info": "cyan",
         "highlight": "bold bright_white on blue",
