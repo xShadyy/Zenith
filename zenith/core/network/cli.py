@@ -1,8 +1,9 @@
 from zenith.core.menu import tools_cli
 
-from .cuteit import cuteit
+from .bettercap import bettercap
+from .nmap import nmap
 
-__tools__ = [cuteit]
+__tools__ = [nmap, bettercap]
 
 
 def cli():

@@ -1,4 +1,3 @@
-# Core
 from zenith.core.menu import tools_cli
 
 from .changeme import changeme

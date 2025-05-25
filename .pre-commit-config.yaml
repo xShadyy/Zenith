@@ -29,7 +29,3 @@ repos:
     rev: 5.13.2
     hooks:
       - id: isort
-  # - repo: https://github.com/markdownlint/markdownlint
-  #   rev: v0.11.0
-  #   hooks:
-  #     - id: markdownlint

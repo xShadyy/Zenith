@@ -21,7 +21,6 @@ def detect_os() -> str:
 
 def detect_package_manager() -> Optional[str]:
     """Detect available package manager using shutil.which()."""
-    # Check in order of preference
     package_managers = ["brew", "apt-get", "yum", "pacman", "dnf", "zypper"]
 
     for pm in package_managers:
@@ -32,16 +31,7 @@ def detect_package_manager() -> Optional[str]:
 
 
 def install_package(package_name: str, package_manager: str = None) -> bool:
-    """
-    Install a package using the appropriate package manager.
-
-    Args:
-        package_name: Name of the package to install
-        package_manager: Specific package manager to use (optional)
-
-    Returns:
-        True if installation was successful, False otherwise
-    """
+    """ """
     if package_manager is None:
         package_manager = detect_package_manager()
 
@@ -49,7 +39,6 @@ def install_package(package_name: str, package_manager: str = None) -> bool:
         console.print("No supported package manager found", style="bold red")
         return False
 
-    # Define installation commands for different package managers
     install_commands = {
         "brew": ["brew", "install", package_name],
         "apt-get": ["sudo", "apt-get", "install", "-y", package_name],
@@ -87,23 +76,13 @@ def install_package(package_name: str, package_manager: str = None) -> bool:
 def get_install_command(
     package_name: str, package_manager: str = None
 ) -> Optional[str]:
-    """
-    Get the installation command for a package without executing it.
-
-    Args:
-        package_name: Name of the package to install
-        package_manager: Specific package manager to use (optional)
-
-    Returns:
-        Installation command as string, or None if not supported
-    """
+    """ """
     if package_manager is None:
         package_manager = detect_package_manager()
 
     if package_manager is None:
         return None
 
-    # Define installation commands for different package managers
     install_commands = {
         "brew": f"brew install {package_name}",
         "apt-get": f"sudo apt-get install -y {package_name}",

@@ -74,16 +74,17 @@ def prompt(path="", base_path="~"):
 
 
 def input_wait():
-    input("\nPress [ENTER] to continue... ")
+    console.print()
+    input("Press [ENTER] to continue... ")
     clear_screen()
 
 
 def tools_cli(name, tools, links=True):
-    table = Table(box=box.HEAVY_HEAD)
-    table.add_column("Name", style="red", no_wrap=True)
-    table.add_column("Description", style="magenta")
+    table = Table(box=box.ROUNDED, border_style="table_border", title_style="highlight")
+    table.add_column("Name", style="tool_name", no_wrap=True, width=20)
+    table.add_column("Description", style="tool_description", min_width=40)
     if links:
-        table.add_column("Link", no_wrap=True)
+        table.add_column("Repository", style="link", no_wrap=True, width=30)
 
     tools_dict = {}
     for tool in tools:
@@ -95,7 +96,14 @@ def tools_cli(name, tools, links=True):
             args.append(text_link)
         table.add_row(*args)
 
-    console.print(table)
+    console.print()
+    console.print(table, justify="center")
+    console.print()
+    console.print("Available Commands:", style="info")
+    console.print("  Type tool name to run", style="tool_description")
+    console.print("  Type 'back' or 'return' to go back", style="tool_description")
+    console.print("  Type 'exit' to quit", style="tool_description")
+    console.print()
     console.print("back", style="command")
     set_readline(list(tools_dict.keys()) + BACK_COMMANDS)
     selected_tool = input(prompt(name.split(".")[-2])).strip()
@@ -104,38 +112,47 @@ def tools_cli(name, tools, links=True):
             return
         if selected_tool == "exit":
             raise KeyboardInterrupt
-        console.print("Invalid Command", style="bold yellow")
+        console.print("Invalid Command", style="error")
+        console.print("Please select a valid tool from the list above", style="warning")
+        console.print()
+        input("Press [ENTER] to continue...")
         clear_screen()
         return tools_cli(name, tools, links)
     tool = tools_dict.get(selected_tool)
     if hasattr(tool, "install") and not tool.installed():
+        console.print(f"Installing {selected_tool}...", style="info")
         try:
             tool.install()
         except Exception as e:
-            # Import InstallError here to avoid circular imports
             from zenith.core.repo import InstallError
 
             if isinstance(e, InstallError):
-                console.print(f"Installation failed: {str(e)}", style="bold yellow")
+                console.print(f"Installation failed: {str(e)}", style="error")
                 return input_wait()
             else:
-                # Re-raise other exceptions
                 raise
-        # Check if installation was successful after install attempt
         if not tool.installed():
-            console.print("Tool installation was cancelled", style="bold yellow")
+            console.print("Tool installation was cancelled", style="warning")
             return input_wait()
+        console.print(f"{selected_tool} installed successfully!", style="success")
     try:
+        console.print(f"Running {selected_tool}...", style="info")
         response = tool.run()
         if response and response > 0 and response != 256:
             console.print(
-                f"{selected_tool} returned a non-zero exit code", style="bold red"
+                f"Warning: {selected_tool} returned a non-zero exit code ({response})",
+                style="warning",
             )
             if hasattr(tool, "install") and confirm("Do you want to reinstall?"):
                 os.chdir(INSTALL_DIR)
                 shutil.rmtree(tool.full_path)
+                console.print(f"Reinstalling {selected_tool}...", style="info")
                 tool.install()
+                console.print(
+                    f"{selected_tool} reinstalled successfully!", style="success"
+                )
     except KeyboardInterrupt:
+        console.print("\nOperation cancelled by user", style="warning")
         return
 
     return input_wait()

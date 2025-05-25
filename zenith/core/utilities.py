@@ -45,18 +45,7 @@ class base64_decode(Utility):
     def run(self):
         user_base64 = input("\nEnter base64: ").strip()
         text = b64decode(user_base64)
-        console.print(f"\nDecoded that is: {text}")
-
-
-class spawn_shell(Utility):
-    def __init__(self):
-        super().__init__(description="Spawns a local shell")
-
-    def run(self):
-        console.print("Enter `exit` to return to Zenith")
-        shell = os.getenv("SHELL", "/bin/bash")
-        os.chdir(INSTALL_DIR)
-        os.system(shell)
+        console.print(f"\nDecoded: {text}")
 
 
 class print_contributors(Utility):
@@ -65,7 +54,7 @@ class print_contributors(Utility):
 
     def run(self):
         banner = pyfiglet.figlet_format("Author")
-        console.print(banner, style="bold yellow")
+        console.print(banner, style="bold white")
 
         response = get(
             f"https://api.github.com/repos/{GITHUB_PATH}/contributors", timeout=30
@@ -78,9 +67,7 @@ class print_contributors(Utility):
             console.print(f" {username} ".center(30, "-"))
 
 
-__tools__ = [
-    tool() for tool in [host2ip, base64_decode, spawn_shell, print_contributors]
-]
+__tools__ = [tool() for tool in [host2ip, base64_decode, print_contributors]]
 
 
 def cli():
