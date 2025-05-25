@@ -2,14 +2,23 @@ from rich.console import Console
 from rich.theme import Theme
 from rich.traceback import install
 
-# Install Traceback
 install()
 
-# Console Setup
 zenith_theme = Theme(
     {
         "command": "black on white",
         "warning": "bold yellow",
+        "error": "bold red",
+        "success": "bold green",
+        "tool_name": "bright_cyan",
+        "tool_description": "bright_white",
+        "prompt": "bright_blue",
+        "table_border": "white",
+        "link": "blue underline",
+        "banner": "bright_magenta",
+        "menu_category": "bright_yellow",
+        "info": "cyan",
+        "highlight": "bold bright_white on blue",
     }
 )
 console = Console(theme=zenith_theme)

@@ -22,12 +22,10 @@ REQUIRES_PYTHON = ">=3.12.0"
 
 here = os.path.abspath(os.path.dirname(__file__))
 
-# Load the package's version information
 pkg_vars: Dict[str, Any] = {}
 with open(os.path.join(here, NAME, "__version__.py"), encoding="utf-8") as f:
     exec(f.read(), pkg_vars)
 
-# Long description from README
 try:
     with open(os.path.join(here, "README.md"), encoding="utf-8") as f:
         long_description = f.read()
@@ -42,7 +40,7 @@ def get_requirements(path: str) -> List[str]:
 
 class TagCommand(Command):
     description = "Push latest version as git tag."
-    user_options: List[Any] = []  # type: ignore
+    user_options: List[Any] = []
 
     @staticmethod
     def status(s: str) -> None:

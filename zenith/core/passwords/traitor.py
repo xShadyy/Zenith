@@ -13,7 +13,6 @@ class TraitorRepo(GitHubRepo):
     def __init__(self):
         if "nt" in os.name:
             self.arch = ""
-            # same as if there's nothing matching, but prevents default checking uname, which only works on posix
         elif platform.uname().machine in arch_map:
             self.arch = arch_map.get(platform.uname().machine)
         else:
@@ -50,9 +49,7 @@ class TraitorRepo(GitHubRepo):
             return os.system(
                 f"{self.full_path}/{self.name} {premade_args.get(selected)}"
             )
-        if (
-            selected and selected not in premade_args
-        ):  # allow passing custom specific exploits
+        if selected and selected not in premade_args:
             return os.system(f"{self.full_path}/{self.name} -e {selected}")
         return self.run()
 
