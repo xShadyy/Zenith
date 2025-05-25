@@ -15,7 +15,7 @@ repos:
     hooks:
       - id: pyupgrade
         args:
-          - "--py37"
+          - "--py312-plus"
   - repo: https://github.com/psf/black
     rev: 24.4.2
     hooks:
