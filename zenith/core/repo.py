@@ -123,10 +123,10 @@ class GitHubRepo(metaclass=ABCMeta):
         return self.full_path
 
     def install(self, no_confirm: bool = False, clone: bool = True) -> None:
-        if no_confirm or not confirm(
+        if not no_confirm and not confirm(
             f"\nDo you want to install https://github.com/{self.path}?"
         ):
-            return
+            raise InstallError("User cancelled installation")
         command = "exit 1"  # avoid unset issues
         if clone:
             self.clone()
@@ -156,7 +156,7 @@ class GitHubRepo(metaclass=ABCMeta):
                     if packages:
                         print_pip_deps(packages)
                     if not confirm(message):
-                        raise InstallError("User Cancelled")
+                        raise InstallError("User cancelled pip installation")
 
                 elif "go" in install and which("go"):
                     command = install.get("go")
@@ -184,7 +184,15 @@ class GitHubRepo(metaclass=ABCMeta):
             else:
                 command = install
 
-            os.system(command)
+            # Only execute the command if it's not the default failure command
+            if command != "exit 1":
+                result = os.system(command)
+                if result != 0:
+                    raise InstallError(
+                        f"Installation command failed with exit code {result}"
+                    )
+            else:
+                raise InstallError("No valid installation command determined")
 
     def installed(self) -> bool:
         return os.path.exists(self.full_path)

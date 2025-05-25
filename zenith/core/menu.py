@@ -109,7 +109,18 @@ def tools_cli(name, tools, links=True):
         return tools_cli(name, tools, links)
     tool = tools_dict.get(selected_tool)
     if hasattr(tool, "install") and not tool.installed():
-        tool.install()
+        try:
+            tool.install()
+        except Exception as e:
+            # Import InstallError here to avoid circular imports
+            from zenith.core.repo import InstallError
+
+            if isinstance(e, InstallError):
+                console.print(f"Installation failed: {str(e)}", style="bold yellow")
+                return input_wait()
+            else:
+                # Re-raise other exceptions
+                raise
         # Check if installation was successful after install attempt
         if not tool.installed():
             console.print("Tool installation was cancelled", style="bold yellow")
