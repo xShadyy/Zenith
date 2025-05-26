@@ -8,21 +8,20 @@ from setuptools import Command, find_packages, setup
 # Package meta-data.
 NAME = "zenith"
 DESCRIPTION = "Flexible Framework for Conducting Penetration Tests"
-URL = "https://github.com/xShadyy/Zenith"
+URL = "https://github.com/zenith-collective/Zenith"
 GIT_URL = URL
 PROJECT_URLS = {
     "Documentation": GIT_URL + "/blob/main/README.md",
-    "Changelog": GIT_URL + "/blob/main/CHANGELOG.md",
     "Issue Tracker": GIT_URL + "/issues",
     "Source": GIT_URL,
 }
 EMAIL = "tymoteusz.netter@gmail.com"
-AUTHOR = "xShadyy"
+AUTHOR = "Zenith-Collective"
 REQUIRES_PYTHON = ">=3.12.0"
 
 here = os.path.abspath(os.path.dirname(__file__))
 
-pkg_vars: Dict[str, Any] = {}
+pkg_vars: dict[str, Any] = {}
 with open(os.path.join(here, NAME, "__version__.py"), encoding="utf-8") as f:
     exec(f.read(), pkg_vars)
 
@@ -33,14 +32,14 @@ except FileNotFoundError:
     long_description = DESCRIPTION
 
 
-def get_requirements(path: str) -> List[str]:
+def get_requirements(path: str) -> list[str]:
     with open(path, encoding="utf-8") as f:
         return [line.strip() for line in f if line.strip() and not line.startswith("#")]
 
 
 class TagCommand(Command):
     description = "Push latest version as git tag."
-    user_options: List[Any] = []
+    user_options: list[Any] = []
 
     @staticmethod
     def status(s: str) -> None:
