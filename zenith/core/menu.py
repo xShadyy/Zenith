@@ -122,7 +122,7 @@ def tools_cli(name, tools, links=True):
         return tools_cli(name, tools, links)
     tool = tools_dict.get(selected_tool)
     if hasattr(tool, "install") and not tool.installed():
-        console.print(f"Installing {selected_tool}...", style="info")
+        console.print(f"Setting up {selected_tool}...", style="info")
         try:
             tool.install()
         except Exception as e:
@@ -134,9 +134,12 @@ def tools_cli(name, tools, links=True):
             else:
                 raise
         if not tool.installed():
-            console.print("Tool installation was cancelled", style="warning")
+            console.print("Tool setup was cancelled", style="warning")
             return input_wait()
-        console.print(f"{selected_tool} installed successfully!", style="success")
+        console.print(f"{selected_tool} setup completed successfully!", style="success")
+    elif hasattr(tool, "install"):
+        console.print(f"{selected_tool} is ready to use", style="info")
+    
     try:
         console.print(f"Running {selected_tool}...", style="info")
         response = tool.run()
@@ -148,6 +151,8 @@ def tools_cli(name, tools, links=True):
             if hasattr(tool, "install") and confirm("Do you want to reinstall?"):
                 os.chdir(INSTALL_DIR)
                 shutil.rmtree(tool.full_path)
+                if hasattr(tool, "reset_dependencies"):
+                    tool.reset_dependencies()
                 console.print(f"Reinstalling {selected_tool}...", style="info")
                 tool.install()
                 console.print(
