@@ -1,6 +1,6 @@
 import os
 import shutil
-from typing import Iterable
+from collections.abc import Iterable
 
 from rich import box
 from rich.style import Style
@@ -106,7 +106,6 @@ def tools_cli(name, tools, links=True):
     console.print("  Type 'back' or 'return' to go back", style="tool_description")
     console.print("  Type 'exit' to quit", style="tool_description")
     console.print()
-    console.print("back", style="command")
     set_readline(list(tools_dict.keys()) + BACK_COMMANDS)
     selected_tool = input(prompt(name.split(".")[-2])).strip()
     if selected_tool not in tools_dict:
@@ -121,43 +120,51 @@ def tools_cli(name, tools, links=True):
         clear_screen()
         return tools_cli(name, tools, links)
     tool = tools_dict.get(selected_tool)
-    if hasattr(tool, "install") and not tool.installed():
-        console.print(f"Setting up {selected_tool}...", style="info")
-        try:
-            tool.install()
-        except Exception as e:
-            from zenith.core.repo import InstallError
 
-            if isinstance(e, InstallError):
+    if hasattr(tool, "install") and not tool.installed():
+
+        console.print(f"\n{selected_tool} is not installed.", style="warning")
+        from zenith.core.repo import InstallError
+
+        if confirm(f"Do you want to install {selected_tool}?"):
+            console.print(f"Installing {selected_tool}...", style="info")
+            try:
+
+                tool.install(no_confirm=True)
+
+                if not tool.installed():
+                    console.print(
+                        f"Installation failed: Tool verification check failed",
+                        style="error",
+                    )
+                    return input_wait()
+
+                console.print(
+                    f"{selected_tool} successfully installed!", style="success"
+                )
+            except InstallError as e:
                 console.print(f"Installation failed: {str(e)}", style="error")
                 return input_wait()
-            else:
-                raise
-        if not tool.installed():
-            console.print("Tool setup was cancelled", style="warning")
+            except Exception as e:
+                console.print(f"Unexpected error: {str(e)}", style="error")
+                return input_wait()
+        else:
+            console.print("Installation cancelled", style="info")
             return input_wait()
-        console.print(f"{selected_tool} setup completed successfully!", style="success")
-    elif hasattr(tool, "install"):
-        console.print(f"{selected_tool} is ready to use", style="info")
-    
+
     try:
-        console.print(f"Running {selected_tool}...", style="info")
+        console.print(f"\nRunning {selected_tool}...", style="info")
+        console.print("─" * 50, style="info")
         response = tool.run()
+
         if response and response > 0 and response != 256:
+            console.print("─" * 50, style="info")
             console.print(
-                f"Warning: {selected_tool} returned a non-zero exit code ({response})",
+                f"Note: {selected_tool} returned a non-zero exit code ({response})",
                 style="warning",
             )
-            if hasattr(tool, "install") and confirm("Do you want to reinstall?"):
-                os.chdir(INSTALL_DIR)
-                shutil.rmtree(tool.full_path)
-                if hasattr(tool, "reset_dependencies"):
-                    tool.reset_dependencies()
-                console.print(f"Reinstalling {selected_tool}...", style="info")
-                tool.install()
-                console.print(
-                    f"{selected_tool} reinstalled successfully!", style="success"
-                )
+            return tools_cli(name, tools, links)
+
     except KeyboardInterrupt:
         console.print("\nOperation cancelled by user", style="warning")
         return

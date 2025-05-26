@@ -7,26 +7,22 @@ from socket import gethostbyname
 import pyfiglet
 from rich.align import Align
 
+import zenith.core.utilities
 import zenith.enumeration
 import zenith.network
 import zenith.obfuscation
 import zenith.passwords
-import zenith.core.utilities
 import zenith.web_apps
 from zenith.console import console
 from zenith.core.config import CONFIG_FILE, get_config, write_config
-from zenith.core.menu import (
-    clear_screen,
-    module_name,
-    prompt,
-    set_readline,
-)
+from zenith.core.menu import clear_screen, module_name, prompt, set_readline
 
 config = get_config()
 
+
 def create_skull_art():
     from rich.text import Text
-    
+
     skull_lines = [
         "          .                                                      .",
         "        .n                   .                 .                  n.",
@@ -48,16 +44,16 @@ def create_skull_art():
         "                              XP^X'b   d'X^XX",
         "                              X. 9     '  P )X",
         "                              b         '  d'",
-        "                                            '"
+        "                                            '",
     ]
-    
+
     text = Text()
     for line in skull_lines:
         if "PROJECT" in line and "ZENITH" in line:
             parts = line.split("PROJECT")
             text.append(parts[0])
             text.append("PROJECT", style="red")
-            
+
             remaining = parts[1].split("ZENITH")
             text.append(remaining[0])
             text.append("ZENITH", style="red")
@@ -65,14 +61,15 @@ def create_skull_art():
         else:
             text.append(line)
         text.append("\n")
-    
+
     return text
+
 
 SKULL_ART = create_skull_art()
 
 TERMS = """
-I shall not use Zenith to engage in any activity that infringes 
-intellectual property rights, violates privacy or 
+I shall not use Zenith to engage in any activity that infringes
+intellectual property rights, violates privacy or
 security, distributes malicious code,
 or otherwise harms individuals, systems, or networks.
 I shall not use Zenith to manipulate or reverse engineer the platform,
@@ -100,14 +97,15 @@ commands = list(items.keys()) + list(BUILTIN_FUNCTIONS.keys())
 def print_menu_items():
     from rich.columns import Columns
     from rich.text import Text
+
     from zenith.core.menu import format_tools
-    
+
     cols = []
     for value in MENU_ITEMS:
         name = module_name(value)
-        tools = getattr(value, '__tools__', [])
+        tools = getattr(value, "__tools__", [])
         tools_formatted = format_tools(tools)
-        
+
         tools_str = Text()
         tools_str.append(name.upper(), style="command")
         tools_str.append(tools_formatted, style="tool_description")
@@ -115,7 +113,7 @@ def print_menu_items():
 
     console.print(Columns(cols, equal=True, expand=True))
     console.print()
-    
+
     console.print("System Commands:", style="menu_category")
     for key in BUILTIN_FUNCTIONS:
         console.print(f"  {key}", style="command")

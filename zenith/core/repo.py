@@ -1,8 +1,9 @@
 import os
 import subprocess
 from abc import ABCMeta, abstractmethod
+from collections.abc import Iterable
 from shutil import rmtree, which
-from typing import Dict, Iterable, List, Optional, Union
+from typing import Dict, List, Optional, Union
 
 from git import RemoteProgress, Repo
 from rich.progress import BarColumn, Progress, TaskID
@@ -21,7 +22,7 @@ from zenith.core.package_manager import (
 config = get_config()
 
 
-def print_pip_deps(packages: Union[str, Iterable[str]]) -> None:
+def print_pip_deps(packages: str | Iterable[str]) -> None:
     requirements = []
     if isinstance(packages, str) and os.path.exists(packages):
         with open(packages, encoding="utf-8") as requirements_file:
@@ -57,10 +58,10 @@ class GitProgress(RemoteProgress):
             "[progress.filesize]{task.fields[msg]}",
         )
         self.current_opcode = None
-        self.task: Optional[TaskID] = None
+        self.task: TaskID | None = None
 
     def update(
-        self, opcode, count: int, max_value: int, msg: Optional[str] = None
+        self, opcode, count: int, max_value: int, msg: str | None = None
     ) -> None:
         opcode_strs = {
             self.COUNTING: "Counting",
@@ -101,7 +102,7 @@ class GitHubRepo(metaclass=ABCMeta):
     def __init__(
         self,
         path: str = "xShadyy/zenith",
-        install: Union[str, Dict[str, Union[str, List[str]]]] = "pip install -e .",
+        install: str | dict[str, str | list[str]] = "pip install -e .",
         description=None,
     ) -> None:
         self.path = path
@@ -116,40 +117,60 @@ class GitHubRepo(metaclass=ABCMeta):
         return self.name.lower().replace("-", "_")
 
     def _check_pip_dependencies_installed(self) -> bool:
-        """Check if pip dependencies are already installed by testing imports."""
-        if not isinstance(self.install_options, dict) or "pip" not in self.install_options:
+        if (
+            not isinstance(self.install_options, dict)
+            or "pip" not in self.install_options
+        ):
             return True
-        
+
         packages = self.install_options.get("pip")
-        if not packages or isinstance(packages, str) and packages.startswith("pip install"):
+        if (
+            not packages
+            or isinstance(packages, str)
+            and packages.startswith("pip install")
+        ):
             return True
-            
-        # Check if dependencies marker file exists
+
         if os.path.exists(self.deps_marker):
             return True
-            
-        # Try to validate some common dependencies by attempting imports
-        requirements_file = os.path.join(self.full_path, packages) if isinstance(packages, str) else None
+
+        requirements_file = (
+            os.path.join(self.full_path, packages)
+            if isinstance(packages, str)
+            else None
+        )
         if requirements_file and os.path.exists(requirements_file):
             try:
-                # Try to check if some key packages are importable
-                with open(requirements_file, 'r', encoding='utf-8') as f:
+
+                with open(requirements_file, encoding="utf-8") as f:
                     for line in f:
                         line = line.strip()
-                        if line and not line.startswith('#'):
-                            # Extract package name (before any version specifiers)
-                            pkg_name = line.split('>=')[0].split('==')[0].split('<=')[0].split('>')[0].split('<')[0].split('!')[0].strip()
+                        if line and not line.startswith("#"):
+
+                            pkg_name = (
+                                line.split(">=")[0]
+                                .split("==")[0]
+                                .split("<=")[0]
+                                .split(">")[0]
+                                .split("<")[0]
+                                .split("!")[0]
+                                .strip()
+                            )
                             if pkg_name:
                                 try:
                                     result = subprocess.run(
-                                        [subprocess.sys.executable, '-c', f'import {pkg_name.replace("-", "_")}'],
+                                        [
+                                            subprocess.sys.executable,
+                                            "-c",
+                                            f'import {pkg_name.replace("-", "_")}',
+                                        ],
                                         capture_output=True,
-                                        timeout=5
+                                        timeout=5,
                                     )
                                     if result.returncode != 0:
                                         return False
                                 except (subprocess.TimeoutExpired, Exception):
-                                    # If we can't check, assume they need to be installed
+
                                     return False
                 return True
             except (FileNotFoundError, Exception):
@@ -157,19 +178,17 @@ class GitHubRepo(metaclass=ABCMeta):
         return False
 
     def _mark_dependencies_installed(self) -> None:
-        """Create a marker file indicating dependencies are installed."""
+
         try:
-            with open(self.deps_marker, 'w', encoding='utf-8') as f:
+            with open(self.deps_marker, "w", encoding="utf-8") as f:
                 f.write(f"Dependencies installed for {self.name}\n")
         except OSError:
-            pass  # Ignore if we can't create the marker file
+            pass
 
     def reset_dependencies(self) -> None:
-        """Remove dependency marker to force reinstallation."""
         try:
             if os.path.exists(self.deps_marker):
                 os.remove(self.deps_marker)
-                console.print(f"Dependency marker removed for {self.name}", style="info")
         except OSError:
             pass
 
@@ -193,26 +212,23 @@ class GitHubRepo(metaclass=ABCMeta):
             f"\nDo you want to install https://github.com/{self.path}?"
         ):
             raise InstallError("User cancelled installation")
-        
-        # Clone the repository first
+
         if clone:
             self.clone()
 
-        # Check if dependencies are already installed
         if self._check_pip_dependencies_installed():
-            console.print(f"Dependencies for {self.name} are already installed", style="info")
             return
 
         if not self.install_options:
             return
 
         command = "exit 1"
-        
+
         if clone:
             os.chdir(self.full_path)
         else:
             os.chdir(INSTALL_DIR)
-        
+
         install = self.install_options
         current_os = detect_os()
         package_manager = detect_package_manager()
@@ -221,7 +237,7 @@ class GitHubRepo(metaclass=ABCMeta):
             if "pip" in install:
                 packages = install.get("pip")
                 message = ""
-                
+
                 if isinstance(packages, list):
                     message = "Do you want to install these packages?"
                     packages_str = " ".join(packages)
@@ -230,14 +246,14 @@ class GitHubRepo(metaclass=ABCMeta):
                         print_pip_deps(packages)
                     except (ValueError, FileNotFoundError):
                         pass
-                        
+
                 elif isinstance(packages, str):
                     if packages.startswith("pip install"):
-                        # Direct pip command
+
                         command = packages
                         message = f"Do you want to run: {command}?"
                     else:
-                        # Requirements file
+
                         requirements_file = os.path.join(self.full_path, packages)
                         if os.path.exists(requirements_file):
                             command = f"pip install -r {requirements_file}"
@@ -247,13 +263,18 @@ class GitHubRepo(metaclass=ABCMeta):
                             except (ValueError, FileNotFoundError):
                                 pass
                         else:
-                            # Check for pyproject.toml as fallback
-                            pyproject_file = os.path.join(self.full_path, "pyproject.toml")
+
+                            pyproject_file = os.path.join(
+                                self.full_path, "pyproject.toml"
+                            )
                             if os.path.exists(pyproject_file):
                                 command = "pip install ."
                                 message = f"Installing current directory (pyproject.toml found)"
                             else:
-                                console.print(f"Warning: Requirements file {requirements_file} not found", style="warning")
+                                console.print(
+                                    f"Warning: Requirements file {requirements_file} not found",
+                                    style="warning",
+                                )
                                 console.print("Skipping pip installation", style="info")
                                 return
 
@@ -266,9 +287,7 @@ class GitHubRepo(metaclass=ABCMeta):
             elif "binary" in install:
                 bin_url = install.get("binary")
                 if which("curl"):
-                    command = (
-                        f"curl -L -o {self.full_path}/{self.name} -s {bin_url}"
-                    )
+                    command = f"curl -L -o {self.full_path}/{self.name} -s {bin_url}"
                 elif which("wget"):
                     command = f"wget -q -O {self.full_path}/{self.name} {bin_url}"
                 else:
@@ -344,7 +363,7 @@ class GitHubRepo(metaclass=ABCMeta):
                 raise InstallError(
                     f"Installation command failed with exit code {result}"
                 )
-            # Mark dependencies as installed after successful installation
+
             if "pip" in str(command):
                 self._mark_dependencies_installed()
         else:
@@ -376,15 +395,13 @@ class GitHubRepo(metaclass=ABCMeta):
         return False
 
     def installed(self) -> bool:
-        """Check if the tool and its dependencies are installed."""
-        # First check if the tool directory exists
+
         if not os.path.exists(self.full_path):
             return False
-        
-        # For tools with pip dependencies, also check if they're installed
+
         if isinstance(self.install_options, dict) and "pip" in self.install_options:
             return self._check_pip_dependencies_installed()
-        
+
         return True
 
     @abstractmethod

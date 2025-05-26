@@ -1,8 +1,7 @@
-from zenith.console import console
+from zenith.core.menu import tools_cli
 
 __tools__ = []
 
 
 def cli():
-    console.print("Obfuscation tools have been removed from this framework.", style="info")
-    console.print("This category is available for future tool additions.", style="info")
+    tools_cli(__name__, __tools__)
