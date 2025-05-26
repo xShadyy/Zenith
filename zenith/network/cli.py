@@ -1,7 +1,6 @@
 from zenith.core.menu import tools_cli
-from .nmap import nmap
 
-__tools__ = [nmap]
+__tools__ = []
 
 
 def cli():

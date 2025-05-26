@@ -1,7 +1,6 @@
 from zenith.core.menu import tools_cli
-from .photon import photon
 
-__tools__ = [photon]
+__tools__ = []
 
 
 def cli():
